@@ -1,30 +1,528 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en-AU">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>EloClimb | Chess training that sticks</title>
-  <style>
-    body {
-      margin: 0;
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      font-family: system-ui, sans-serif;
-      background: #14171c;
-      color: #f2f2f2;
-      text-align: center;
-      padding: 24px;
-    }
-    h1 { font-size: 3rem; margin: 0 0 12px; }
-    h1 span { color: #7fb069; }
-    p { font-size: 1.2rem; color: #b8bcc4; max-width: 480px; }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EloClimb | Chess training built around your own mistakes</title>
+<meta name="description" content="EloClimb teaches openings, middlegame, endgames and puzzles, and uses AI to find the habits behind your mistakes so your training targets them.">
+<meta property="og:title" content="EloClimb">
+<meta property="og:description" content="Chess training built around your own mistakes.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://eloclimb.app">
+<meta name="theme-color" content="#1c2057">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%231c2057'/%3E%3Crect x='5' y='19' width='7' height='8' fill='%23c9d2ff'/%3E%3Crect x='12.5' y='12' width='7' height='15' fill='%23ffb238'/%3E%3Crect x='20' y='5' width='7' height='22' fill='%23ff5a3c'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,800&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --indigo: #1c2057;
+    --indigo-deep: #14173f;
+    --square-light: #c9d2ff;
+    --square-dark: #6170d6;
+    --mist: #f1f3fd;
+    --white: #ffffff;
+    --hot: #ff5a3c;
+    --warm: #ffb238;
+    --mild: #ffe66b;
+    --ink: #1c2057;
+    --ink-soft: #4a4f80;
+    --display: "Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
+    --body: "Source Serif 4", Georgia, serif;
+  }
+
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    margin: 0;
+    font-family: var(--body);
+    font-size: 1.125rem;
+    line-height: 1.6;
+    color: var(--ink);
+    background: var(--mist);
+    -webkit-font-smoothing: antialiased;
+  }
+  h1, h2, h3, p { margin: 0; }
+  a { color: inherit; }
+  :focus-visible { outline: 3px solid var(--warm); outline-offset: 3px; border-radius: 4px; }
+
+  .wrap { width: min(1120px, 100% - 40px); margin-inline: auto; }
+
+  /* ---------- Top band: nav + hero ---------- */
+  .top { background: var(--indigo); color: var(--white); }
+
+  .nav {
+    display: flex; align-items: center; justify-content: space-between;
+    padding-block: 22px;
+    font-family: var(--display);
+  }
+  .brand {
+    display: inline-flex; align-items: center; gap: 10px;
+    font-weight: 800; font-size: 1.35rem; letter-spacing: -0.02em;
+    text-decoration: none;
+  }
+  .brand svg { width: 28px; height: 28px; }
+  .nav-links { display: flex; align-items: center; gap: 28px; font-size: 1rem; }
+  .nav-links a { text-decoration: none; opacity: 0.85; }
+  .nav-links a:hover { opacity: 1; text-decoration: underline; text-underline-offset: 5px; }
+  .nav-links .nav-cta {
+    opacity: 1; padding: 9px 18px; border: 2px solid var(--square-light); border-radius: 999px;
+  }
+  .nav-links .nav-cta:hover { background: var(--square-light); color: var(--indigo); text-decoration: none; }
+
+  .hero {
+    display: grid;
+    grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr);
+    gap: 56px;
+    align-items: center;
+    padding-block: 56px 96px;
+  }
+  .hero h1 {
+    font-family: var(--display);
+    font-weight: 800;
+    font-size: clamp(2.7rem, 6.2vw, 5rem);
+    line-height: 0.98;
+    letter-spacing: -0.035em;
+    text-wrap: balance;
+  }
+  .hero-sub {
+    margin-top: 26px;
+    max-width: 34ch;
+    font-size: 1.3rem;
+    line-height: 1.5;
+    color: var(--square-light);
+  }
+  .cta-row { margin-top: 36px; }
+  .button {
+    display: inline-block;
+    font-family: var(--display);
+    font-weight: 600;
+    font-size: 1.1rem;
+    text-decoration: none;
+    padding: 16px 28px;
+    border-radius: 999px;
+    background: var(--warm);
+    color: var(--indigo-deep);
+    transition: background-color 0.15s ease;
+  }
+  .button:hover { background: var(--mild); }
+  .cta-note {
+    margin-top: 14px;
+    font-size: 0.95rem;
+    color: var(--square-light);
+    opacity: 0.85;
+  }
+
+  /* ---------- Heat map demo ---------- */
+  .demo {
+    background: var(--indigo-deep);
+    border-radius: 22px;
+    padding: 22px;
+  }
+  .demo-title {
+    font-family: var(--display);
+    font-weight: 600;
+    font-size: 1.05rem;
+    margin-bottom: 14px;
+  }
+  .habits { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 18px; }
+  .habit {
+    font-family: var(--display);
+    font-size: 0.92rem;
+    font-weight: 600;
+    color: var(--square-light);
+    background: transparent;
+    border: 1.5px solid rgba(201, 210, 255, 0.35);
+    border-radius: 999px;
+    padding: 8px 14px;
+    cursor: pointer;
+  }
+  .habit:hover { border-color: var(--square-light); }
+  .habit[aria-pressed="true"] {
+    background: var(--square-light); border-color: var(--square-light); color: var(--indigo-deep);
+  }
+
+  .board-area { display: grid; grid-template-columns: 18px 1fr; gap: 6px; }
+  .ranks, .files {
+    font-family: var(--display); font-size: 0.75rem; color: var(--square-light); opacity: 0.6;
+  }
+  .ranks { display: grid; grid-template-rows: repeat(8, 1fr); align-items: center; text-align: center; }
+  .files { grid-column: 2; display: grid; grid-template-columns: repeat(8, 1fr); text-align: center; }
+  .board {
+    position: relative;
+    aspect-ratio: 1;
+    display: grid;
+    grid-template-columns: repeat(8, 1fr);
+    grid-template-rows: repeat(8, 1fr);
+    border-radius: 8px;
+    overflow: hidden;
+  }
+  .sq.light { background: var(--square-light); }
+  .sq.dark { background: var(--square-dark); }
+  .spots { position: absolute; inset: 0; pointer-events: none; }
+  .spot {
+    position: absolute;
+    aspect-ratio: 1;
+    border-radius: 50%;
+    transform: translate(-50%, -50%) scale(0);
+    background: radial-gradient(circle,
+      rgba(255, 90, 60, 0.95) 0%,
+      rgba(255, 138, 58, 0.85) 28%,
+      rgba(255, 178, 56, 0.55) 52%,
+      rgba(255, 230, 107, 0.25) 70%,
+      rgba(255, 230, 107, 0) 78%);
+    animation: bloom 0.7s cubic-bezier(0.2, 0.9, 0.3, 1.15) forwards;
+  }
+  @keyframes bloom { to { transform: translate(-50%, -50%) scale(1); } }
+
+  .finding { margin-top: 20px; }
+  .finding h2 {
+    font-family: var(--display);
+    font-weight: 800;
+    font-size: 1.4rem;
+    line-height: 1.2;
+    letter-spacing: -0.015em;
+    text-wrap: balance;
+  }
+  .finding p { margin-top: 10px; font-size: 1rem; line-height: 1.5; color: var(--square-light); }
+  .finding .plan { color: var(--mild); }
+
+  .phases { margin-top: 18px; display: grid; gap: 8px; }
+  .phases-title { font-family: var(--display); font-size: 0.9rem; color: var(--square-light); opacity: 0.8; }
+  .phase { display: grid; grid-template-columns: 96px 1fr 42px; align-items: center; gap: 10px;
+    font-family: var(--display); font-size: 0.9rem; }
+  .phase .track { display: block; height: 10px; border-radius: 999px; background: rgba(201, 210, 255, 0.16); overflow: hidden; }
+  .phase .fill { display: block; height: 100%; border-radius: 999px; background: linear-gradient(90deg, var(--warm), var(--hot));
+    width: 0; transition: width 0.6s ease; }
+  .phase .pct { text-align: right; font-variant-numeric: tabular-nums; }
+
+  .demo-caption { margin-top: 16px; font-size: 0.85rem; line-height: 1.4; color: var(--square-light); opacity: 0.7; }
+
+  /* ---------- What you train ---------- */
+  .train { padding-block: 104px; }
+  .section-head {
+    font-family: var(--display);
+    font-weight: 800;
+    font-size: clamp(2rem, 4.2vw, 3.2rem);
+    line-height: 1.04;
+    letter-spacing: -0.03em;
+    max-width: 18ch;
+    text-wrap: balance;
+  }
+  .train-grid {
+    margin-top: 56px;
+    display: grid;
+    grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+    gap: 56px;
+    align-items: start;
+  }
+  .basics { list-style: none; margin: 0; padding: 0; }
+  .basics li {
+    display: grid; grid-template-columns: 52px 1fr; gap: 16px;
+    padding-block: 22px;
+    border-top: 1.5px solid rgba(28, 32, 87, 0.14);
+  }
+  .basics li:last-child { border-bottom: 1.5px solid rgba(28, 32, 87, 0.14); }
+  .piece { font-size: 2.3rem; line-height: 1; color: var(--square-dark); }
+  .basics h3, .yours h3 { font-family: var(--display); font-weight: 800; letter-spacing: -0.015em; }
+  .basics h3 { font-size: 1.3rem; }
+  .basics p { margin-top: 4px; color: var(--ink-soft); font-size: 1.05rem; line-height: 1.5; }
+
+  .yours {
+    background: var(--indigo);
+    color: var(--white);
+    border-radius: 22px;
+    padding: 40px;
+  }
+  .yours h3 { font-size: clamp(1.7rem, 3vw, 2.3rem); line-height: 1.08; letter-spacing: -0.025em; }
+  .yours > p { margin-top: 18px; color: var(--square-light); }
+  .signals { list-style: none; margin: 28px 0 0; padding: 0; display: grid; gap: 14px; }
+  .signals li { display: grid; grid-template-columns: 14px 1fr; gap: 14px; align-items: baseline; }
+  .signals li::before {
+    content: ""; width: 14px; height: 14px; border-radius: 50%; transform: translateY(1px);
+    background: radial-gradient(circle, var(--hot) 0%, var(--warm) 55%, rgba(255, 230, 107, 0.3) 100%);
+  }
+  .signals strong { font-family: var(--display); font-weight: 600; }
+
+  /* ---------- How it works ---------- */
+  .how { background: var(--white); padding-block: 104px; }
+  .moves { list-style: none; margin: 56px 0 0; padding: 0;
+    display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 40px; }
+  .moves li { border-top: 4px solid var(--indigo); padding-top: 20px; }
+  .move-no { font-family: var(--display); font-weight: 800; font-size: 2.6rem; line-height: 1;
+    letter-spacing: -0.03em; color: var(--square-dark); }
+  .moves h3 { margin-top: 14px; font-family: var(--display); font-weight: 800; font-size: 1.4rem;
+    letter-spacing: -0.015em; }
+  .moves p { margin-top: 8px; color: var(--ink-soft); font-size: 1.05rem; line-height: 1.55; }
+
+  /* ---------- Waitlist ---------- */
+  .waitlist { background: var(--indigo); color: var(--white); padding-block: 104px; }
+  .waitlist .section-head { max-width: 16ch; }
+  .waitlist p.lead { margin-top: 22px; max-width: 44ch; font-size: 1.25rem; line-height: 1.5; color: var(--square-light); }
+  .waitlist .contact { margin-top: 28px; font-size: 1rem; color: var(--square-light); }
+  .waitlist .contact a { color: var(--white); text-underline-offset: 4px; }
+
+  footer { background: var(--indigo-deep); color: var(--square-light); font-family: var(--display);
+    font-size: 0.92rem; padding-block: 26px; }
+  footer .wrap { display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+  footer a { text-decoration: none; }
+  footer a:hover { text-decoration: underline; }
+
+  /* ---------- Responsive ---------- */
+  @media (max-width: 900px) {
+    .hero { grid-template-columns: 1fr; gap: 44px; padding-block: 32px 72px; }
+    .train-grid { grid-template-columns: 1fr; gap: 40px; }
+    .moves { grid-template-columns: 1fr; gap: 32px; }
+    .train, .how, .waitlist { padding-block: 72px; }
+  }
+  @media (max-width: 560px) {
+    body { font-size: 1.05rem; }
+    .wrap { width: calc(100% - 32px); }
+    .nav-links a:not(.nav-cta) { display: none; }
+    .demo { padding: 16px; border-radius: 18px; }
+    .yours { padding: 28px 22px; }
+    .phase { grid-template-columns: 84px 1fr 38px; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior: auto; }
+    .spot { animation: none; transform: translate(-50%, -50%) scale(1); }
+    .phase .fill { transition: none; }
+  }
+</style>
 </head>
 <body>
-  <h1>Elo<span>Climb</span></h1>
-  <p>Smarter chess training to help you climb the rating ladder. Coming soon.</p>
+
+<div class="top">
+  <header class="wrap nav">
+    <a class="brand" href="#" aria-label="EloClimb home">
+      <svg viewBox="0 0 32 32" aria-hidden="true">
+        <rect x="2" y="19" width="8.5" height="11" fill="#c9d2ff"/>
+        <rect x="11.75" y="11" width="8.5" height="19" fill="#ffb238"/>
+        <rect x="21.5" y="3" width="8.5" height="27" fill="#ff5a3c"/>
+      </svg>
+      EloClimb
+    </a>
+    <nav class="nav-links" aria-label="Main">
+      <a href="#train">What you train</a>
+      <a href="#how">How it works</a>
+      <a class="nav-cta" href="signup.html">Join the waitlist</a>
+    </nav>
+  </header>
+
+  <main class="wrap hero" id="top">
+    <div>
+      <h1>You don't blunder at random.</h1>
+      <p class="hero-sub">EloClimb reads your games, finds the habits behind your mistakes, and builds your training around them.</p>
+      <div class="cta-row">
+        <a class="button" href="signup.html">Join the waitlist</a>
+        <p class="cta-note">In development now. Early access opens to the waitlist first.</p>
+      </div>
+    </div>
+
+    <section class="demo" aria-label="Sample mistake heat map">
+      <p class="demo-title">Pick a habit to see what EloClimb would show that player</p>
+      <div class="habits" id="habits"></div>
+
+      <div class="board-area">
+        <div class="ranks" aria-hidden="true"><span>8</span><span>7</span><span>6</span><span>5</span><span>4</span><span>3</span><span>2</span><span>1</span></div>
+        <div class="board" id="board" role="img" aria-label="Chess board with warm spots on the squares where this player's mistakes cluster">
+          <div class="spots" id="spots"></div>
+        </div>
+        <div class="files" aria-hidden="true"><span>a</span><span>b</span><span>c</span><span>d</span><span>e</span><span>f</span><span>g</span><span>h</span></div>
+      </div>
+
+      <div class="finding" aria-live="polite">
+        <h2 id="finding-head"></h2>
+        <p id="finding-detail"></p>
+        <p class="plan" id="finding-plan"></p>
+      </div>
+
+      <div class="phases">
+        <p class="phases-title">Share of mistakes by stage of the game</p>
+        <div class="phase"><span>Opening</span><span class="track"><span class="fill" id="bar-0"></span></span><span class="pct" id="pct-0"></span></div>
+        <div class="phase"><span>Middlegame</span><span class="track"><span class="fill" id="bar-1"></span></span><span class="pct" id="pct-1"></span></div>
+        <div class="phase"><span>Endgame</span><span class="track"><span class="fill" id="bar-2"></span></span><span class="pct" id="pct-2"></span></div>
+      </div>
+
+      <p class="demo-caption">These are sample players with made-up numbers, to show what a report looks like. Warm spots mark the squares where that player's mistakes pile up.</p>
+    </section>
+  </main>
+</div>
+
+<section class="train" id="train">
+  <div class="wrap">
+    <h2 class="section-head">Four things every chess site teaches. One that only your games can.</h2>
+
+    <div class="train-grid">
+      <ul class="basics">
+        <li>
+          <span class="piece" aria-hidden="true">&#9816;&#xFE0E;</span>
+          <div>
+            <h3>Openings</h3>
+            <p>Learn your lines move by move, along with the plans behind them, so you know what to do when the theory runs out.</p>
+          </div>
+        </li>
+        <li>
+          <span class="piece" aria-hidden="true">&#9815;&#xFE0E;</span>
+          <div>
+            <h3>Middlegame</h3>
+            <p>Tactics, pawn structure and planning, taught through positions you play out yourself.</p>
+          </div>
+        </li>
+        <li>
+          <span class="piece" aria-hidden="true">&#9812;&#xFE0E;</span>
+          <div>
+            <h3>Endgames</h3>
+            <p>The positions that decide close games, practised until you can play them without thinking.</p>
+          </div>
+        </li>
+        <li>
+          <span class="piece" aria-hidden="true">&#9813;&#xFE0E;</span>
+          <div>
+            <h3>Puzzles</h3>
+            <p>Short daily tactics that keep your pattern recognition sharp.</p>
+          </div>
+        </li>
+      </ul>
+
+      <div class="yours">
+        <h3>Behaviour analysis: the part that's about you</h3>
+        <p>Most training hands every player the same lessons. EloClimb's AI studies your own games and looks for what your mistakes have in common. Then it points your opening, middlegame, endgame and puzzle work at exactly that.</p>
+        <ul class="signals">
+          <li><span><strong>When it happens.</strong> Early, in the middlegame, or once the endgame starts.</span></li>
+          <li><span><strong>What the clock says.</strong> Whether you slip with plenty of time or only in a scramble.</span></li>
+          <li><span><strong>What kind of position.</strong> Open or closed, attacking or defending, ahead or behind.</span></li>
+          <li><span><strong>Which tactic you miss.</strong> Forks, pins, back-rank mates, loose pieces.</span></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="how" id="how">
+  <div class="wrap">
+    <h2 class="section-head">From your games to your training plan</h2>
+    <ol class="moves">
+      <li>
+        <div class="move-no">1.</div>
+        <h3>Play your games</h3>
+        <p>Keep playing the way you normally do. EloClimb works from what you actually do at the board, not from a quiz.</p>
+      </li>
+      <li>
+        <div class="move-no">2.</div>
+        <h3>See your habits</h3>
+        <p>The AI goes through your games and reports the patterns in plain language, like the three sample players above.</p>
+      </li>
+      <li>
+        <div class="move-no">3.</div>
+        <h3>Train what matters</h3>
+        <p>Your lessons and puzzles shift toward your weakest habits, and the report updates as you fix them.</p>
+      </li>
+    </ol>
+  </div>
+</section>
+
+<section class="waitlist" id="waitlist">
+  <div class="wrap">
+    <h2 class="section-head">EloClimb is being built right now</h2>
+    <p class="lead">Join the waitlist and you'll get an email when the first version opens. Nothing else, no newsletter.</p>
+    <div class="cta-row">
+      <a class="button" href="signup.html">Join the waitlist</a>
+      <p class="cta-note">It takes about a minute. Only your name and email are required.</p>
+    </div>
+    <p class="contact">Questions or ideas? Write to <a href="mailto:contact@eloclimb.app">contact@eloclimb.app</a>.</p>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <span>&copy; 2026 EloClimb</span>
+    <a href="mailto:contact@eloclimb.app">contact@eloclimb.app</a>
+  </div>
+</footer>
+
+<script>
+  // Sample players. All numbers are illustrative.
+  var players = [
+    {
+      label: "Rushes when the clock is low",
+      head: "7 in 10 of your blunders come with under 30 seconds left.",
+      detail: "The positions aren't hard. You run out of time because moves 10 to 20 take you twice as long as they should.",
+      plan: "Your plan: timed middlegame drills, plus endgames you can play on instinct.",
+      phases: [10, 28, 62],
+      spots: [["h7", 0.95], ["a2", 0.75], ["g7", 0.6], ["h2", 0.65], ["b2", 0.5], ["e5", 0.5], ["d4", 0.4]]
+    },
+    {
+      label: "Drifts after the opening",
+      head: "Your mistakes cluster on moves 9 to 14, right after your opening knowledge ends.",
+      detail: "You know the first eight moves well. You don't yet know the plans that are meant to follow them.",
+      plan: "Your plan: extend each line two moves at a time, with the middlegame ideas attached.",
+      phases: [55, 33, 12],
+      spots: [["d5", 0.95], ["c4", 0.8], ["e5", 0.7], ["b2", 0.6], ["c5", 0.5], ["f7", 0.45]]
+    },
+    {
+      label: "Leaves pieces undefended",
+      head: "You lose a piece to a knight fork about once every three games.",
+      detail: "It's nearly always the same shape: a loose piece on the c or f file, two moves before the fork lands.",
+      plan: "Your plan: fork puzzles taken from your own games, and a loose-piece check before every move.",
+      phases: [15, 64, 21],
+      spots: [["c7", 0.95], ["f7", 0.85], ["c2", 0.7], ["f2", 0.6], ["e5", 0.55], ["d4", 0.4], ["e6", 0.4]]
+    }
+  ];
+
+  var board = document.getElementById("board");
+  var spots = document.getElementById("spots");
+  var habits = document.getElementById("habits");
+
+  // Draw the 64 squares.
+  for (var r = 0; r < 8; r++) {
+    for (var f = 0; f < 8; f++) {
+      var sq = document.createElement("div");
+      sq.className = "sq " + ((r + f) % 2 === 0 ? "light" : "dark");
+      board.insertBefore(sq, spots);
+    }
+  }
+
+  function show(index) {
+    var p = players[index];
+    document.getElementById("finding-head").textContent = p.head;
+    document.getElementById("finding-detail").textContent = p.detail;
+    document.getElementById("finding-plan").textContent = p.plan;
+
+    for (var i = 0; i < 3; i++) {
+      document.getElementById("bar-" + i).style.width = p.phases[i] + "%";
+      document.getElementById("pct-" + i).textContent = p.phases[i] + "%";
+    }
+
+    spots.innerHTML = "";
+    p.spots.forEach(function (s, n) {
+      var file = s[0].charCodeAt(0) - 97;
+      var rank = parseInt(s[0].charAt(1), 10);
+      var el = document.createElement("span");
+      el.className = "spot";
+      el.style.left = (file + 0.5) * 12.5 + "%";
+      el.style.top = (8 - rank + 0.5) * 12.5 + "%";
+      el.style.width = (1.2 + s[1] * 1.5) * 12.5 + "%";
+      el.style.opacity = 0.55 + s[1] * 0.45;
+      el.style.animationDelay = n * 90 + "ms";
+      spots.appendChild(el);
+    });
+
+    Array.prototype.forEach.call(habits.children, function (b, n) {
+      b.setAttribute("aria-pressed", n === index ? "true" : "false");
+    });
+  }
+
+  players.forEach(function (p, n) {
+    var b = document.createElement("button");
+    b.type = "button";
+    b.className = "habit";
+    b.textContent = p.label;
+    b.addEventListener("click", function () { show(n); });
+    habits.appendChild(b);
+  });
+
+  show(0);
+</script>
 </body>
 </html>
